@@ -1,0 +1,152 @@
+package com.section27.movieappfragment.fragment;
+
+import android.content.res.Configuration;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.section27.movieappfragment.R;
+import com.section27.movieappfragment.adapter.MovieAdapter;
+import com.section27.movieappfragment.databinding.FragmentTopMovieBinding;
+import com.section27.movieappfragment.model.Movie;
+import com.section27.movieappfragment.model.MovieRepository;
+import com.section27.movieappfragment.view.MovieViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link TopMovieFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class TopMovieFragment extends Fragment {
+
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    // TODO: Rename and change types of parameters
+    private ArrayList<Movie> movieArrayList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private MovieAdapter movieAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private FragmentTopMovieBinding fragmentTopMovieBinding;
+
+    private MovieViewModel movieViewModel;
+    private  int page =1;
+    private String mParam1;
+    private String mParam2;
+
+    public TopMovieFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment TopMovieFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static TopMovieFragment newInstance(String param1, String param2) {
+        TopMovieFragment fragment = new TopMovieFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+//       View view = inflater.inflate(R.layout.fragment_top_movie , container ,false);
+        fragmentTopMovieBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_top_movie , container ,false)  ;
+        View view = fragmentTopMovieBinding.getRoot();
+
+        //set viewModel
+        movieViewModel = new ViewModelProvider(this).get(MovieViewModel.class);
+        // set recycler view
+        recyclerView = fragmentTopMovieBinding.rvMovies;
+        getPopularMovies(page);
+        setupRecyclerView();
+
+
+        return view;
+    }
+
+    private void setupRecyclerView() {
+
+    movieAdapter = new MovieAdapter(getContext().getApplicationContext(),movieArrayList);
+
+        int spanCount = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? 2 : 4;
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(),spanCount));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(movieAdapter);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(!recyclerView.canScrollVertically(1)){
+                    getPopularMovies(page);
+                }
+            }
+        });
+
+    }
+
+    private void getPopularMovies(int pageTemp) {
+
+        movieViewModel.getMutableLiveData(MovieRepository.TOP_MOVIE , pageTemp).observe(getActivity(), new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> moviesFromLiveData) {
+                if (page == 1) {
+                    movieArrayList.clear();
+                }
+                removeDuplicate(moviesFromLiveData, movieArrayList);
+                movieAdapter.notifyDataSetChanged();
+                page++;
+            }
+        });
+
+
+
+}
+    private List<Movie> removeDuplicate(List<Movie> duplicateList, ArrayList<Movie> noneDuplicateList) {
+        for (Movie movie : duplicateList) {
+            if (!noneDuplicateList.contains(movie)) {
+                noneDuplicateList.add(movie);
+            }
+        }
+        return noneDuplicateList;
+    }
+}
