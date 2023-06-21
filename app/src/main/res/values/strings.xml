@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">movieAppFragment</string>
-    <string name="api_key">4146e6bcffe2fde78896baea4b87cab8</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

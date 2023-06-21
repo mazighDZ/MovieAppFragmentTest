@@ -22,7 +22,7 @@ public class MovieRepository {
     public  static  int TOP_MOVIE = 2;
     public  static  int POPULAR_SERIES = 3;
     // for GetHub
-  //  private static final String API_KEY = System.getenv("themoviedb_API_KEY");
+    private static final String API_KEY = System.getenv("themoviedb_API_KEY");
     private ArrayList<Movie> movies = new ArrayList<>();
     private ArrayList<Movie> foundMovies = new ArrayList<>();
 
@@ -40,11 +40,11 @@ public class MovieRepository {
         MovieDataService movieDataService = RetrofiteInstance.getService();
         Call<MovieResponse> call;
         if(typeMovie == POPULAR_SERIES){
-            call = movieDataService.getPopularSeries(application.getApplicationContext().getString(R.string.api_key),page);
+            call = movieDataService.getPopularSeries(API_KEY,page);
         }else if (typeMovie == TOP_MOVIE){
-            call = movieDataService.getTopMovies(application.getApplicationContext().getString(R.string.api_key),page);
+            call = movieDataService.getTopMovies(API_KEY,page);
         }else {
-            call = movieDataService.getPopularMovies(application.getApplicationContext().getString(R.string.api_key ),page);
+            call = movieDataService.getPopularMovies(API_KEY,page);
 
         }
         call.enqueue(new Callback<MovieResponse>() {
@@ -71,7 +71,7 @@ public class MovieRepository {
     // data call when searching Movie
     public  MutableLiveData<List<Movie>> getMutableLiveDataSearch(String movieName , int page){
         MovieDataService movieSearchService = RetrofiteInstance.getService();
-        Call<MovieResponse> call = movieSearchService.getSearchedMovie(application.getApplicationContext().getString(R.string.api_key),movieName,page);
+        Call<MovieResponse> call = movieSearchService.getSearchedMovie(API_KEY,movieName,page);
 
         call.enqueue(new Callback<MovieResponse>() {
             @Override
